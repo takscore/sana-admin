@@ -42,8 +42,8 @@ export default function ProductsPage() {
       setProducts(productsData);
       setCategories(categoriesData);
       setBranches(branchesData);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load data');
+    } catch (err) {
+     setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -51,6 +51,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleCreate(e: React.FormEvent) {
@@ -68,8 +69,8 @@ export default function ProductsPage() {
       });
       setForm({ name: '', price: '', unit: '', sku: '', stockQty: '0', categoryId: '', branchId: '' });
       await loadAll();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create product');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create product');
     } finally {
       setSubmitting(false);
     }

@@ -13,6 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="font-bold">Sana Admin</span>
           <Link href="/" className="text-sm text-gray-600 hover:text-black">Dashboard</Link>
           <Link href="/products" className="text-sm text-gray-600 hover:text-black">Products</Link>
+          <Link href="/orders" className="text-sm text-gray-600 hover:text-black">Orders</Link>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-500">{user?.name} ({user?.role})</span>
