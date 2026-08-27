@@ -24,16 +24,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
+    async function restoreSession() {
+      const accessToken = localStorage.getItem('accessToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      if (!accessToken && !refreshToken) {
+        setLoading(false);
+        return;
+      }
+
+      let res: Response | null = null;
+
+      if (accessToken) {
+        res = await fetch(`${API_URL}/auth/me`, { headers: { Authorization: `Bearer ${accessToken}` } });
+      }
+
+      if ((!res || res.status === 401) && refreshToken) {
+        const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const { accessToken: newAccessToken } = await refreshRes.json();
+          localStorage.setItem('accessToken', newAccessToken);
+          res = await fetch(`${API_URL}/auth/me`, { headers: { Authorization: `Bearer ${newAccessToken}` } });
+        }
+      }
+
+      if (res && res.ok) {
+        setUser(await res.json());
+      } else {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      }
       setLoading(false);
-      return;
     }
-    fetch(`${API_URL}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => setUser(data))
-      .catch(() => localStorage.removeItem('accessToken'))
-      .finally(() => setLoading(false));
+
+    restoreSession();
   }, []);
 
   async function login(email: string, password: string) {
